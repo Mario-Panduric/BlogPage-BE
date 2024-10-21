@@ -3,10 +3,12 @@ using WebApplication5.Entities;
 
 namespace WebApplication5.DTOs
 {
-    public class PostsDto
+    public record PostsDto
     {
         public required string Title { get; set; }
         public required string Content { get; set; }
         public int? userID { get; set; }
+        [JsonIgnore]
+        public ICollection<UsersComments>? Comments { get; } = new List<UsersComments>();
     }
 }

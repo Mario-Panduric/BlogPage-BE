@@ -41,14 +41,15 @@ namespace WebApplication5.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateComment(UsersCommentsDto newComment)
+        [Route("Comment")]
+        public async Task<ActionResult<UsersComments>> CreateComment(SubmitCommentDto newComment)
         {
             var comment = _mapper.Map<UsersComments>(newComment);
             _context.Add(comment);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(CreateComment),
-                    _mapper.Map<UsersCommentsDto>(comment));
+                    _mapper.Map<SubmitCommentDto>(comment));
         }
 
         [HttpPut("{id}")]

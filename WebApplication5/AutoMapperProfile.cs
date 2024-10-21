@@ -12,6 +12,8 @@ namespace WebApplication5
             this.CreateMap<User, UserDto>().ReverseMap().ForMember(x => x.Id, opt => opt.Ignore());
             this.CreateMap<UsersComments, UsersCommentsDto>().ReverseMap().ForMember(x => x.Id, opt => opt.Ignore());
             this.CreateMap<Posts, GetPostDto>().ReverseMap().ForMember(x => x.Id, opt => opt.Ignore());
+            this.CreateMap<Posts, GetPostWithCommentsDto>().ReverseMap().ForMember(x => x.Id, opt => opt.Ignore());
+            this.CreateMap<UsersComments, SubmitCommentDto>().ReverseMap().ForMember(x => x.Id, opt => opt.Ignore());
         }
     }
 }

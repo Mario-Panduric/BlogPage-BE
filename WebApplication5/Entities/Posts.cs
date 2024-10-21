@@ -1,4 +1,5 @@
-﻿using WebApplication5.Entities;
+﻿using System.Text.Json.Serialization;
+using WebApplication5.Entities;
 
 namespace WebApplication5.Entities
 {

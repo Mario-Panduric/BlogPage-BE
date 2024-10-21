@@ -1,8 +1,10 @@
 ﻿namespace WebApplication5.DTOs
 {
-    public class UsersCommentsDto
+    public record UsersCommentsDto
     {
         public required string Content { get; set; }
         public int UserId { get; set; }
+        public UserDto? User { get; set; }
+        public int PostId { get; set; }
     }
 }

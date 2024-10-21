@@ -4,7 +4,6 @@ using WebApplication5.Data;
 using AutoMapper;
 using WebApplication5.DTOs;
 using WebApplication5.Entities;
-using System.Diagnostics;
 
 namespace WebApplication5.Controllers
 {
@@ -25,20 +24,25 @@ namespace WebApplication5.Controllers
         public async Task<ActionResult<IEnumerable<Posts>>> GetPosts()
         {
             var posts = await _context.Posts.Where(c => c.isActive).ToListAsync();
+            
             return this.Ok(_mapper.Map<List<GetPostDto>>(posts));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PostsDto>> GetPost(int id)
+        public async Task<ActionResult<GetPostWithCommentsDto>> GetPost(int id)
         {
-            var post = await _context.Posts.FirstOrDefaultAsync(c => c.Id == id && c.isActive);
-
+            var post = await _context.Posts
+                .Include(x => x.Comments)
+                .ThenInclude(x => x.User)
+                .FirstOrDefaultAsync(c => c.Id == id && c.isActive);
+   
+     
             if (post == null)
             {
                 return NotFound();
             }
 
-            return _mapper.Map<PostsDto>(post);
+            return _mapper.Map<GetPostWithCommentsDto>(post);
         }
 
         [HttpPost]

@@ -1,13 +1,14 @@
-﻿namespace WebApplication5.DTOs
+﻿using WebApplication5.Entities;
+
+namespace WebApplication5.DTOs
 {
-    public record GetPostDto
+    public record GetPostWithCommentsDto
     {
         public int Id { get; set; }
         public required string Title { get; set; }
         public required string Content { get; set; }
         public required int userId { get; set; }
+        public ICollection<UsersCommentsDto>? Comments { get; } = new List<UsersCommentsDto>();
         DateTime CreatedAt { get; set; }
-
     }
-
 }

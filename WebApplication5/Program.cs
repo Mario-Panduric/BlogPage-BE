@@ -1,11 +1,8 @@
 
-using WebApplication5.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using WebApplication5.Data;
 using WebApplication5.Entities;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Text.Json.Serialization;
 namespace WebApplication5
 {
     public class Program
@@ -40,7 +37,7 @@ namespace WebApplication5
                 options.AddPolicy(name: "MyAllowSpecificOrigins",
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:3000", "http://localhost:3000/signup", "http://localhost:3000/signin", "http://localhost:3000/Home");
+                                      policy.WithOrigins("http://localhost:3000", "http://localhost:3000/signup", "http://localhost:3000/signin", "http://localhost:3000/Home", "http://localhost:3000/blog/");
                                       policy.AllowAnyHeader();
                                       policy.AllowAnyMethod();
                                       policy.AllowCredentials();
