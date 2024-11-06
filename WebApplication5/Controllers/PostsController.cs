@@ -4,6 +4,7 @@ using WebApplication5.Data;
 using AutoMapper;
 using WebApplication5.DTOs;
 using WebApplication5.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication5.Controllers
 {
@@ -21,6 +22,7 @@ namespace WebApplication5.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Posts>>> GetPosts()
         {
             var posts = await _context.Posts.Where(c => c.isActive).ToListAsync();

@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApplication5.Data;
 using WebApplication5.Entities;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using WebApplication5.Authorization;
 namespace WebApplication5
 {
     public class Program
@@ -14,19 +19,45 @@ namespace WebApplication5
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddAuthentication(options => 
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddCookie(options =>
+            {
+                options.Cookie.Name = "token";
 
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "localhost.com",
+                    ValidAudience = "localhost.com",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKeyThatIsVeryVeryLong12345")
+                    )
+                    
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["token"];
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            builder.Services.AddScoped<TokenGenerator>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDistributedMemoryCache();
 
-            // This was missing:
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-            });
+        
             builder.Services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -37,7 +68,7 @@ namespace WebApplication5
                 options.AddPolicy(name: "MyAllowSpecificOrigins",
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:3000", "http://localhost:3000/signup", "http://localhost:3000/signin", "http://localhost:3000/Home", "http://localhost:3000/blog/");
+                                      policy.WithOrigins("http://localhost:3000", "http://localhost:3000/signup", "http://localhost:3000/signin", "http://localhost:3000/home", "http://localhost:3000/blog/");
                                       policy.AllowAnyHeader();
                                       policy.AllowAnyMethod();
                                       policy.AllowCredentials();
@@ -55,11 +86,12 @@ namespace WebApplication5
                 app.UseSwaggerUI();
             }
             
-            app.UseHttpsRedirection();
-
+            //app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             app.UseCors("MyAllowSpecificOrigins");
-            app.UseSession();
+
             app.Run();
         }
     }

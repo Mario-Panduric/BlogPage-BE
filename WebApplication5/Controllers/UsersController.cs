@@ -5,7 +5,9 @@ using WebApplication5.Entities;
 using WebApplication5.DTOs;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
+using WebApplication5.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace WebApplication5.Controllers
 {
@@ -17,12 +19,14 @@ namespace WebApplication5.Controllers
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly PasswordHasher<User> _passwordHasher;
+        private readonly TokenGenerator _tokenGenerator;
 
-        public UsersController(DataContext context, IMapper mapper, PasswordHasher<User> passwordHasher)
+        public UsersController(DataContext context, IMapper mapper, PasswordHasher<User> passwordHasher, TokenGenerator tokenGenerator)
         {
             _context = context;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _tokenGenerator = tokenGenerator;
         }
 
         [HttpGet]
@@ -80,17 +84,62 @@ namespace WebApplication5.Controllers
         [Route("Login")]
         public async Task<ActionResult<User>> LoginUser(LoginUserDto credentials)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == credentials.UserName);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == credentials.UserName && x.isActive);
             
             if (user != null)
             {
                 var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.UserPassword, credentials.UserPassword);
                 if (passwordResult == PasswordVerificationResult.Success)
-                {          
-                    return Ok(_mapper.Map<User>(user));
+                {
+                    var token = _tokenGenerator.Create(user.Id);
+                    HttpContext.Response.Cookies.Append("token", token,
+                        new CookieOptions
+                        {
+                            Expires = DateTime.Now.AddMinutes(10),
+                            HttpOnly = true,
+                            Secure = true,
+                            IsEssential = true,
+                            SameSite = SameSiteMode.None,
+                        });
+                    return Ok( new { token });
                 }
             }
 
+            return NoContent();
+        }
+
+        [HttpGet("verify")]
+        public IActionResult VerifyToken()
+        {
+            if (Request.Cookies.TryGetValue("token", out var token))
+            {
+                var handler = new JwtSecurityTokenHandler();
+                try
+                {
+                    var jwtToken = handler.ReadJwtToken(token);
+
+                    if (jwtToken.ValidTo < DateTime.UtcNow)
+                    {
+                        return Unauthorized(new { authenticated = false, message = "Token has expired" });
+                    }
+
+                    return Ok(new { authenticated = true });
+                }
+                catch
+                {
+                    return Unauthorized(new { authenticated = false, message = "Invalid token" });
+                }
+            }
+
+            return Unauthorized(new { authenticated = false, message = "Token not found" });
+        }
+
+        [HttpPost]
+        [Route("Logout")]
+        [Authorize]
+        public IActionResult LogoutUser()
+        {
+            Response.Cookies.Delete("token");
             return NoContent();
         }
 
