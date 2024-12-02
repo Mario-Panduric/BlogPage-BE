@@ -9,6 +9,6 @@ namespace WebApplication5.DTOs
         public required string Content { get; set; }
         public required int userId { get; set; }
         public ICollection<UsersCommentsDto>? Comments { get; } = new List<UsersCommentsDto>();
-        DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

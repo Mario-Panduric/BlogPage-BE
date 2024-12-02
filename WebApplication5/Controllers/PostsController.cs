@@ -5,6 +5,7 @@ using AutoMapper;
 using WebApplication5.DTOs;
 using WebApplication5.Entities;
 using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace WebApplication5.Controllers
 {
@@ -30,6 +31,20 @@ namespace WebApplication5.Controllers
             return this.Ok(_mapper.Map<List<GetPostDto>>(posts));
         }
 
+        [HttpGet("postTitle")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<Posts>>> GetPostsByName(string postTitle)
+        {
+            if (!string.IsNullOrEmpty(postTitle))
+            {
+                var posts = await _context.Posts.Where(c => c.isActive).ToListAsync();
+                posts = posts.Where(c => c.Title.Contains(postTitle)).ToList();
+                return this.Ok(_mapper.Map<List<GetPostDto>>(posts));
+            }
+            return NotFound();
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<GetPostWithCommentsDto>> GetPost(int id)
         {
@@ -53,6 +68,7 @@ namespace WebApplication5.Controllers
         {
             var post = _mapper.Map<Posts>(newPost);
             _context.Add(post);
+       
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(CreatePost),

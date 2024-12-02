@@ -7,11 +7,13 @@ namespace WebApplication5.Authorization
 {
     public sealed class TokenGenerator
     {
-        public string Create(int id)
+        public string Create(int id, string name, string email)
         {
             var claims = new List<Claim>
                 {
                     new Claim("id", id.ToString()),
+                    new Claim("name", name.ToString()),
+                    new Claim("email", email.ToString()),
                 };
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKeyThatIsVeryVeryLong12345"));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -19,7 +21,7 @@ namespace WebApplication5.Authorization
                 issuer: "localhost.com",
                 audience: "localhost.com",
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(10),
+                expires: DateTime.Now.AddHours(10),
                 signingCredentials: credentials);
             var token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
             return token;

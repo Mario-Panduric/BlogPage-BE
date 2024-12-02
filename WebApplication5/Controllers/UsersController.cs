@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using WebApplication5.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
+using NuGet.Common;
 
 namespace WebApplication5.Controllers
 {
@@ -49,6 +50,7 @@ namespace WebApplication5.Controllers
             return _mapper.Map<UserDto>(user);
         }
 
+        
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -91,11 +93,11 @@ namespace WebApplication5.Controllers
                 var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.UserPassword, credentials.UserPassword);
                 if (passwordResult == PasswordVerificationResult.Success)
                 {
-                    var token = _tokenGenerator.Create(user.Id);
+                    var token = _tokenGenerator.Create(user.Id, user.UserName, user.Email);
                     HttpContext.Response.Cookies.Append("token", token,
                         new CookieOptions
                         {
-                            Expires = DateTime.Now.AddMinutes(10),
+                            Expires = DateTime.Now.AddHours(10),
                             HttpOnly = true,
                             Secure = true,
                             IsEssential = true,
@@ -108,7 +110,7 @@ namespace WebApplication5.Controllers
             return NoContent();
         }
 
-        [HttpGet("verify")]
+        [HttpGet("getLoggedUser")]
         public IActionResult VerifyToken()
         {
             if (Request.Cookies.TryGetValue("token", out var token))
@@ -123,7 +125,7 @@ namespace WebApplication5.Controllers
                         return Unauthorized(new { authenticated = false, message = "Token has expired" });
                     }
 
-                    return Ok(new { authenticated = true });
+                    return Ok(jwtToken.Claims.Take(3).ToList());
                 }
                 catch
                 {
@@ -139,7 +141,15 @@ namespace WebApplication5.Controllers
         [Authorize]
         public IActionResult LogoutUser()
         {
-            Response.Cookies.Delete("token");
+            HttpContext.Response.Cookies.Delete("token",
+                        new CookieOptions
+                        {
+                            Expires = DateTime.Now.AddMinutes(-10),
+                            HttpOnly = true,
+                            Secure = true,
+                            IsEssential = true,
+                            SameSite = SameSiteMode.None,
+                        });
             return NoContent();
         }
 
