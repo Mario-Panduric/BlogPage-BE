@@ -1,4 +1,5 @@
 
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApplication5.Authorization;
 using WebApplication5.Data;
+using WebApplication5.DTOs;
 using WebApplication5.Entities;
+using WebApplication5.Validators;
 namespace WebApplication5
 {
     public class Program
@@ -75,6 +78,7 @@ namespace WebApplication5
             });
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
             builder.Services.AddScoped<PasswordHasher<User>>();
+            builder.Services.AddValidatorsFromAssemblyContaining(typeof(RegisterUserDtoValidator));
 
             var app = builder.Build();
 

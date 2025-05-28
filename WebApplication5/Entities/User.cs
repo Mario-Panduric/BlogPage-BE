@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
+﻿
 namespace WebApplication5.Entities
 {
     public class User : BaseEntity

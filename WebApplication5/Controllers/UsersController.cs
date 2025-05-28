@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using WebApplication5.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
-using NuGet.Common;
+using WebApplication5.Validators;
 
 namespace WebApplication5.Controllers
 {
@@ -21,13 +21,15 @@ namespace WebApplication5.Controllers
         private readonly IMapper _mapper;
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly TokenGenerator _tokenGenerator;
+        private readonly RegisterUserDtoValidator _registerUserValidator;
 
-        public UsersController(DataContext context, IMapper mapper, PasswordHasher<User> passwordHasher, TokenGenerator tokenGenerator)
+        public UsersController(DataContext context, IMapper mapper, PasswordHasher<User> passwordHasher, TokenGenerator tokenGenerator, RegisterUserDtoValidator registerUserValidator)
         {
             _context = context;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
+            _registerUserValidator = registerUserValidator;
         }
 
         [HttpGet]
@@ -49,11 +51,7 @@ namespace WebApplication5.Controllers
 
             return _mapper.Map<UserDto>(user);
         }
-
-        
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut]
         public async Task<IActionResult> EditUser(int id, UserDto updatedUser)
         {
             var user = await _context.Users.FirstOrDefaultAsync(c => c.Id == id && c.isActive);
@@ -69,17 +67,48 @@ namespace WebApplication5.Controllers
             return NoContent();
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Route("Register")]
-        public async Task<ActionResult<User>> RegisterUser(User user)
+        public async Task<ActionResult<User>> RegisterUser(RegisterUserDto userData)
         {
-            user.UserPassword = _passwordHasher.HashPassword(user, user.UserPassword);
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            var result = _registerUserValidator.Validate(userData);
+            if (result.IsValid)
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userData.UserName);
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+                if (user != null)
+                {
+                    return Conflict("User name already exist.");
+                }
+
+                user = await _context.Users.FirstOrDefaultAsync(x => x.Email == userData.Email);
+
+                if (user != null)
+                {
+                    return Conflict("Email already exist.");
+                }
+                var newUser = new User()
+                {
+                    UserName = userData.UserName,
+                    Email = userData.Email,
+                    UserPassword = userData.UserPassword
+                };
+                newUser.UserPassword = _passwordHasher.HashPassword(newUser, newUser.UserPassword);
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetUser", new { id = newUser.Id }, newUser);
+            }
+            else
+            {
+                List<string> errors = new List<string>();
+                foreach (var error in result.Errors)
+                {
+                    errors.Add(error.ToString());
+                }
+                return BadRequest(errors);
+            }
+            
+
         }
 
         [HttpPost]

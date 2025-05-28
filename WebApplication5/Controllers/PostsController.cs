@@ -27,7 +27,16 @@ namespace WebApplication5.Controllers
         public async Task<ActionResult<IEnumerable<Posts>>> GetPosts()
         {
             var posts = await _context.Posts.Where(c => c.isActive).ToListAsync();
-            
+
+            return this.Ok(_mapper.Map<List<GetPostDto>>(posts));
+        }
+
+        [HttpGet("user/{userId}")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<Posts>>> GetPostsFromSpecificUser(int userId)
+        {
+            var posts = await _context.Posts.Where(c => c.isActive && c.UserId == userId).ToListAsync();
+
             return this.Ok(_mapper.Map<List<GetPostDto>>(posts));
         }
 
