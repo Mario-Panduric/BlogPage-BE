@@ -73,7 +73,7 @@ namespace WebApplication5.Controllers
 
         [HttpPost]
         [Route("Post")]
-        public async Task<ActionResult<Posts>> CreatePost(PostsDto newPost)
+        public async Task<ActionResult<Posts>> CreatePost([FromBody] PostsDto newPost)
         {
             var post = _mapper.Map<Posts>(newPost);
             _context.Add(post);

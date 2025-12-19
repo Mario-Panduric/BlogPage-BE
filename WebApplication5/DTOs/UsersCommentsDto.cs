@@ -6,5 +6,6 @@
         public int UserId { get; set; }
         public UserDto? User { get; set; }
         public int PostId { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

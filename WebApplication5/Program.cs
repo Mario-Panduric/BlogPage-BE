@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApplication5.Authorization;
 using WebApplication5.Data;
-using WebApplication5.DTOs;
 using WebApplication5.Entities;
 using WebApplication5.Validators;
 namespace WebApplication5
@@ -70,7 +69,7 @@ namespace WebApplication5
                 options.AddPolicy(name: "MyAllowSpecificOrigins",
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:3000", "http://localhost:3000/signup", "http://localhost:3000/signin", "http://localhost:3000/home", "http://localhost:3000/blog/");
+                                      policy.WithOrigins("http://localhost:5173", "http://localhost:5173/signup", "http://localhost:5173/signin", "http://localhost:5173/home", "http://localhost:5173/blog/");
                                       policy.AllowAnyHeader();
                                       policy.AllowAnyMethod();
                                       policy.AllowCredentials();

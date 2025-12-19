@@ -12,8 +12,8 @@ using WebApplication5.Data;
 namespace WebApplication5.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240921093218_postsUpdatew")]
-    partial class postsUpdatew
+    [Migration("20251117202908_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

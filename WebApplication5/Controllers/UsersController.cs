@@ -78,7 +78,7 @@ namespace WebApplication5.Controllers
 
                 if (user != null)
                 {
-                    return Conflict("User name already exist.");
+                    return Conflict("Username already exist.");
                 }
 
                 user = await _context.Users.FirstOrDefaultAsync(x => x.Email == userData.Email);

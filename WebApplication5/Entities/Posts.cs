@@ -9,6 +9,7 @@ namespace WebApplication5.Entities
         public required string Content { get; set; }
         public int UserId { get; set; }
         public User User { get; set; } = null!;
+        public required byte[] Image { get; set; }
         public ICollection<UsersComments>? Comments { get; } = new List<UsersComments>();
 
     }
