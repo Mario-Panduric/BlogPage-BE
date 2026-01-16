@@ -8,6 +8,7 @@ namespace WebApplication5.DTOs
         public required string Title { get; set; }
         public required string Content { get; set; }
         public required int userId { get; set; }
+        public required byte[] Image { get; set; }
         public ICollection<UsersCommentsDto>? Comments { get; } = new List<UsersCommentsDto>();
         public DateTime CreatedAt { get; set; }
     }
